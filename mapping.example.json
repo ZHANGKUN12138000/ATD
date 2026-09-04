@@ -1,0 +1,26 @@
+{
+  "contact_defaults": {
+    "friction": 0.15,
+    "soft": 2
+  },
+  "material_overrides": {
+    "USER_DEFINED_MATERIAL": {
+      "eos_id": 0,
+      "cards": [
+        "*MAT_USER_DEFINED_MATERIAL_MODELS_TITLE",
+        "USER_DEFINED_MATERIAL",
+        "{MID},1000.0,41,0,0,0,0,0"
+      ]
+    }
+  },
+  "element_type_overrides": {
+    "MY_C3D8": {
+      "family": "solid",
+      "elform": 1,
+      "nodes": 8
+    }
+  },
+  "append_cards": [
+    "$ Project-specific LS-DYNA controls may be appended here"
+  ]
+}

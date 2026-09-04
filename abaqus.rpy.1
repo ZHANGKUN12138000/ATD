@@ -1,0 +1,22 @@
+# -*- coding: mbcs -*-
+#
+# Abaqus/CAE Release 2020 replay file
+# Internal Version: 2019_09_14-01.49.31 163176
+# Run by ZHANG on Wed Sep  2 15:15:42 2026
+#
+
+# from driverUtils import executeOnCaeGraphicsStartup
+# executeOnCaeGraphicsStartup()
+#: Executing "onCaeGraphicsStartup()" in the site directory ...
+from abaqus import *
+from abaqusConstants import *
+session.Viewport(name='Viewport: 1', origin=(1.34375, 1.34028), width=197.8, 
+    height=132.956)
+session.viewports['Viewport: 1'].makeCurrent()
+from driverUtils import executeOnCaeStartup
+executeOnCaeStartup()
+execfile('_check_atd_cae.py', __main__.__dict__)
+#* NameError: name '__file__' is not defined
+#* File "_check_atd_cae.py", line 8, in <module>
+#*     plugin_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 
+#* 'ATD_Abaqus2020'))
