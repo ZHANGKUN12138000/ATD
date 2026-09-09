@@ -193,7 +193,51 @@ class ConverterTests(unittest.TestCase):
         self.assertIn('*MAT_JOHNSON_COOK_TITLE', deck)
         self.assertIn('200,300,0.4,0.02,1.1,1500,20,1', deck)
         self.assertIn('450,0,2,0,0.1,0.2,-0.3,0.01', deck)
+        self.assertIn('1.2,0,1e-06,0', deck)
         self.assertIn('*EOS_GRUNEISEN_TITLE', deck)
+
+    def test_embedded_instance_meshes_keep_repeated_ids_and_parts_separate(self):
+        source = os.path.join(self.temp.name, 'embedded_instances.inp')
+        target = os.path.join(self.temp.name, 'embedded_instances.k')
+        with io.open(source, 'w', encoding='utf-8') as stream:
+            stream.write(
+                '*PART,NAME=P1\n*END PART\n'
+                '*PART,NAME=P2\n*END PART\n'
+                '*ASSEMBLY\n'
+                '*INSTANCE,NAME=I1,PART=P1\n'
+                '*NODE\n1,0,0,0\n2,1,0,0\n3,0,1,0\n4,0,0,1\n'
+                '*ELEMENT,TYPE=C3D4,ELSET=E\n1,1,2,3,4\n'
+                '*SOLID SECTION,ELSET=E,MATERIAL=M1,CONTROLS=EC1\n,\n'
+                '*END INSTANCE\n'
+                '*INSTANCE,NAME=I2,PART=P2\n'
+                '*NODE\n1,10,0,0\n2,11,0,0\n3,10,1,0\n4,10,0,1\n'
+                '*ELEMENT,TYPE=C3D4,ELSET=E\n1,1,2,3,4\n'
+                '*SOLID SECTION,ELSET=E,MATERIAL=M2\n,\n'
+                '*END INSTANCE\n'
+                '*NSET,NSET=BC,INSTANCE=I2\n1\n'
+                '*END ASSEMBLY\n'
+                '*SECTION CONTROLS,NAME=EC1,HOURGLASS=COMBINED,WEIGHT FACTOR=0.2\n'
+                '1,1,1\n'
+                '*MATERIAL,NAME=M1\n*DENSITY\n1\n*ELASTIC\n100,0.3\n'
+                '*MATERIAL,NAME=M2\n*DENSITY\n2\n*ELASTIC\n200,0.25\n'
+                '*CONTACT INITIALIZATION DATA,NAME=EMPTY\n'
+                '*BOUNDARY\nBC,ENCASTRE\n'
+            )
+        result = convert_file(source, target, {'strict': True})
+        self.assertEqual(result['summary']['errors'], 0)
+        self.assertEqual(result['model']['nodes_written'], 8)
+        self.assertEqual(result['model']['elements_written'], 2)
+        self.assertEqual(result['model']['lsdyna_parts'], 2)
+        with io.open(target, encoding='utf-8') as stream:
+            deck = stream.read()
+        self.assertEqual(deck.splitlines().count('*PART'), 2)
+        self.assertIn('P1 / I1 / E / C3D4', deck)
+        self.assertIn('P2 / I2 / E / C3D4', deck)
+        self.assertIn('1,1,1,2,3,4', deck)
+        self.assertIn('2,2,5,6,7,8', deck)
+        self.assertIn('5,10,0,0,0,0', deck)
+        self.assertIn('*BOUNDARY_SPC_SET', deck)
+        self.assertIn('Abaqus SECTION CONTROLS EC1 retained for review', deck)
 
 
 if __name__ == '__main__':

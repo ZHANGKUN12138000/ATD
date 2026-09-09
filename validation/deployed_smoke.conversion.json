@@ -1,0 +1,77 @@
+{
+  "diagnostics": [
+    {
+      "abaqus_keyword": "DAMAGE INITIATION", 
+      "code": "DAMAGE_APPROXIMATION", 
+      "line": 35, 
+      "message": "Damage evolution/stress-state dependence for STEEL is not equivalent to scalar EFFEPS.", 
+      "severity": "WARNING", 
+      "source": "E:\\WorkFile\\PythonWork\\ATD\\examples\\comprehensive.inp"
+    }
+  ], 
+  "idmap_path": "E:\\WorkFile\\PythonWork\\ATD\\validation\\deployed_smoke.idmap.csv", 
+  "input_path": "E:\\WorkFile\\PythonWork\\ATD\\examples\\comprehensive.inp", 
+  "keyword_coverage": {
+    "converted": {
+      "AMPLITUDE": 1, 
+      "ASSEMBLY": 1, 
+      "BOUNDARY": 1, 
+      "CLOAD": 1, 
+      "CONTACT": 1, 
+      "CONTACT INCLUSIONS": 1, 
+      "CONTACT PROPERTY ASSIGNMENT": 1, 
+      "DAMAGE EVOLUTION": 1, 
+      "DAMAGE INITIATION": 1, 
+      "DENSITY": 1, 
+      "DSLOAD": 1, 
+      "DYNAMIC": 1, 
+      "ELASTIC": 1, 
+      "ELEMENT": 1, 
+      "END ASSEMBLY": 1, 
+      "END INSTANCE": 1, 
+      "END PART": 1, 
+      "END STEP": 1, 
+      "FRICTION": 1, 
+      "INSTANCE": 1, 
+      "MATERIAL": 1, 
+      "NODE": 1, 
+      "NSET": 4, 
+      "PART": 1, 
+      "PLASTIC": 1, 
+      "SOLID SECTION": 1, 
+      "STEP": 1, 
+      "SURFACE": 2, 
+      "SURFACE INTERACTION": 1
+    }, 
+    "ignored_as_metadata": {
+      "HEADING": 1
+    }, 
+    "unsupported": {}
+  }, 
+  "model": {
+    "elements_read": 1, 
+    "elements_written": 1, 
+    "instances": 1, 
+    "lsdyna_parts": 1, 
+    "materials": 1, 
+    "nodes_written": 8, 
+    "source_blocks": 34, 
+    "source_parts": 1, 
+    "steps": 1
+  }, 
+  "options": {
+    "strict": true
+  }, 
+  "output_path": "E:\\WorkFile\\PythonWork\\ATD\\validation\\deployed_smoke.k", 
+  "review_note": "Finite-element keyword conversion is not a proof of physical equivalence. Confirm units, element formulations, material calibration, failure, contact, loads, constraints, timestep and energy balance in LS-DYNA.", 
+  "review_required": true, 
+  "summary": {
+    "errors": 0, 
+    "info": 0, 
+    "warnings": 1
+  }, 
+  "tool": {
+    "name": "ATD", 
+    "version": "1.0.2"
+  }
+}

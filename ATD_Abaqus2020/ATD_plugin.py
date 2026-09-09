@@ -37,12 +37,12 @@ try:
         icon=None,
         kernelInitString='import atd_kernel',
         applicableModules=ALL,
-        version='1.0.1',
+        version='1.0.2',
         author='ATD',
         description='Convert an Abaqus input deck into an auditable LS-DYNA keyword deck.',
         helpUrl='',
     )
-    _write_startup_log('OK: ATD 1.0.1 GUI menu registered from %s' % __file__)
+    _write_startup_log('OK: ATD 1.0.2 GUI menu registered from %s' % __file__)
     if os.environ.get('ATD_PLUGIN_SELFTEST') == '1':
         probe_dialog = form.getFirstDialog()
         _write_startup_log('OK: ATD conversion dialog constructed.')

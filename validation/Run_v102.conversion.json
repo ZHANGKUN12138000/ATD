@@ -1,0 +1,135 @@
+{
+  "diagnostics": [
+    {
+      "abaqus_keyword": "CONTACT INITIALIZATION DATA", 
+      "code": "EMPTY_CONTACT_INITIALIZATION", 
+      "line": 641198, 
+      "message": "Empty contact initialization definition CINIT-1 has no active data and was omitted.", 
+      "severity": "INFO", 
+      "source": "E:\\WorkFile\\AbaqusWork\\DireCon\\Run.inp"
+    }, 
+    {
+      "abaqus_keyword": "PLASTIC", 
+      "code": "JOHNSON_COOK_SPECIFIC_HEAT_MISSING", 
+      "line": 641184, 
+      "message": "Johnson-Cook material STEEL-Q235 has thermal softening M=1.5 but no *SPECIFIC HEAT; LS-DYNA CP is left zero and must be reviewed.", 
+      "severity": "WARNING", 
+      "source": "E:\\WorkFile\\AbaqusWork\\DireCon\\Run.inp"
+    }, 
+    {
+      "abaqus_keyword": "DAMAGE INITIATION", 
+      "code": "JOHNSON_COOK_DAMAGE_RATE_REFERENCE", 
+      "line": 641174, 
+      "message": "Abaqus damage reference strain rate 0.02 for STEEL-Q235 differs from plastic-rate reference 1; MAT_015 has one shared EPS0, so the plastic-rate value was retained.", 
+      "severity": "WARNING", 
+      "source": "E:\\WorkFile\\AbaqusWork\\DireCon\\Run.inp"
+    }, 
+    {
+      "abaqus_keyword": "DAMAGE EVOLUTION", 
+      "code": "JOHNSON_COOK_EVOLUTION_REDUCED", 
+      "line": 641176, 
+      "message": "Abaqus progressive damage evolution for STEEL-Q235 was reduced to MAT_015 erosion at failure.", 
+      "severity": "WARNING", 
+      "source": "E:\\WorkFile\\AbaqusWork\\DireCon\\Run.inp"
+    }, 
+    {
+      "abaqus_keyword": "SOLID SECTION", 
+      "code": "JOHNSON_COOK_ELASTIC_EOS", 
+      "line": 639094, 
+      "message": "Generated *EOS_LINEAR_POLYNOMIAL for solid Johnson-Cook material STEEL-Q235 with bulk modulus 15486725663.7.", 
+      "severity": "INFO", 
+      "source": "E:\\WorkFile\\AbaqusWork\\DireCon\\Run.inp"
+    }, 
+    {
+      "abaqus_keyword": "SECTION CONTROLS", 
+      "code": "SECTION_CONTROLS_REVIEW", 
+      "line": 641156, 
+      "message": "Abaqus *SECTION CONTROLS EC-1 has no parameter-equivalent LS-DYNA formulation. Its values were preserved as comments and HGID=0 was used; select an LS-DYNA *HOURGLASS card after hourglass-energy validation.", 
+      "severity": "WARNING", 
+      "source": "E:\\WorkFile\\AbaqusWork\\DireCon\\Run.inp"
+    }, 
+    {
+      "abaqus_keyword": "SECTION CONTROLS", 
+      "code": "SECTION_CONTROLS_REVIEW", 
+      "line": 641161, 
+      "message": "Abaqus *SECTION CONTROLS EC-2 has no parameter-equivalent LS-DYNA formulation. Its values were preserved as comments and HGID=0 was used; select an LS-DYNA *HOURGLASS card after hourglass-energy validation.", 
+      "severity": "WARNING", 
+      "source": "E:\\WorkFile\\AbaqusWork\\DireCon\\Run.inp"
+    }
+  ], 
+  "idmap_path": "E:\\WorkFile\\PythonWork\\ATD\\validation\\Run_v102.idmap.csv", 
+  "input_path": "E:\\WorkFile\\AbaqusWork\\DireCon\\Run.inp", 
+  "keyword_coverage": {
+    "converted": {
+      "ASSEMBLY": 1, 
+      "BOUNDARY": 2, 
+      "BULK VISCOSITY": 1, 
+      "CONTACT": 1, 
+      "CONTACT INCLUSIONS": 1, 
+      "CONTACT PROPERTY ASSIGNMENT": 1, 
+      "DAMAGE EVOLUTION": 1, 
+      "DAMAGE INITIATION": 1, 
+      "DENSITY": 2, 
+      "DETONATION POINT": 1, 
+      "DYNAMIC": 1, 
+      "ELASTIC": 1, 
+      "ELEMENT": 2, 
+      "ELSET": 8, 
+      "END ASSEMBLY": 1, 
+      "END INSTANCE": 2, 
+      "END PART": 2, 
+      "END STEP": 1, 
+      "EOS": 1, 
+      "EXPANSION": 1, 
+      "FRICTION": 1, 
+      "INITIAL CONDITIONS": 1, 
+      "INSTANCE": 2, 
+      "MATERIAL": 2, 
+      "NODE": 2, 
+      "NSET": 8, 
+      "PART": 2, 
+      "PLASTIC": 1, 
+      "RATE DEPENDENT": 1, 
+      "SECTION CONTROLS": 2, 
+      "SOLID SECTION": 2, 
+      "STEP": 1, 
+      "SURFACE BEHAVIOR": 1, 
+      "SURFACE INTERACTION": 1
+    }, 
+    "ignored_as_metadata": {
+      "CONTACT INITIALIZATION DATA": 1, 
+      "HEADING": 1, 
+      "OUTPUT": 2, 
+      "PREPRINT": 1, 
+      "RESTART": 1
+    }, 
+    "unsupported": {}
+  }, 
+  "model": {
+    "elements_read": 308256, 
+    "elements_written": 308256, 
+    "instances": 2, 
+    "lsdyna_parts": 2, 
+    "materials": 2, 
+    "nodes_written": 330799, 
+    "source_blocks": 65, 
+    "source_parts": 2, 
+    "steps": 1
+  }, 
+  "options": {
+    "d3plot_interval": 0.0, 
+    "strict": true
+  }, 
+  "output_path": "E:\\WorkFile\\PythonWork\\ATD\\validation\\Run_v102.k", 
+  "review_note": "Finite-element keyword conversion is not a proof of physical equivalence. Confirm units, element formulations, material calibration, failure, contact, loads, constraints, timestep and energy balance in LS-DYNA.", 
+  "review_required": true, 
+  "summary": {
+    "errors": 0, 
+    "info": 2, 
+    "warnings": 5
+  }, 
+  "tool": {
+    "name": "ATD", 
+    "version": "1.0.2"
+  }
+}

@@ -68,7 +68,7 @@ def convert_file(input_path, output_path, options=None):
 
     report = diagnostics.as_dict()
     report.update({
-        'tool': {'name': 'ATD', 'version': '1.0.0'},
+        'tool': {'name': 'ATD', 'version': '1.0.2'},
         'input_path': input_path,
         'output_path': output_path,
         'idmap_path': idmap_path,

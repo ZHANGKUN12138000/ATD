@@ -23,7 +23,7 @@ MATERIAL_KEYWORDS = set([
     'CRUSHABLE FOAM', 'CYCLIC HARDENING', 'DAMAGE EVOLUTION',
     'DAMAGE INITIATION', 'DAMAGE STABILIZATION', 'DEFORMATION PLASTICITY',
     'DENSITY', 'DEPVAR', 'DRUCKER PRAGER', 'DRUCKER PRAGER HARDENING',
-    'ELASTIC', 'EOS', 'ELECTRICAL CONDUCTIVITY', 'EQUATION OF STATE',
+    'DETONATION POINT', 'ELASTIC', 'EOS', 'ELECTRICAL CONDUCTIVITY', 'EQUATION OF STATE',
     'EXPANSION', 'FAIL STRESS', 'FAIL STRAIN', 'HYPERELASTIC',
     'HYPERFOAM', 'JOHNSON COOK', 'LOW DENSITY FOAM', 'MAGNETIC PERMEABILITY',
     'MOHR COULOMB', 'MOHR COULOMB HARDENING', 'MULLINS EFFECT', 'NO COMPRESSION',
@@ -121,6 +121,11 @@ class InstanceDefinition(object):
         self.part = part
         self.rows = rows
         self.block = block
+        # Abaqus/CAE commonly writes orphan-mesh nodes, elements, sets and
+        # sections between *INSTANCE and *END INSTANCE while leaving the
+        # referenced *PART block empty.  Keep that mesh private to the
+        # instance so repeated labels in another instance cannot overwrite it.
+        self.mesh = SourcePart(part or name)
 
 
 class Action(object):
@@ -149,6 +154,7 @@ class SourceModel(object):
         self.materials = OrderedDict()
         self.interactions = OrderedDict()
         self.amplitudes = OrderedDict()
+        self.section_controls = OrderedDict()
         self.actions = []
         self.steps = OrderedDict()
         self.blocks = []
@@ -265,6 +271,7 @@ def build_source_model(blocks, diagnostics):
     global_part = SourcePart('__GLOBAL__')
     model.parts[global_part.name] = global_part
     current_part = None
+    current_instance = None
     current_material = None
     current_interaction = None
     current_step = None
@@ -298,6 +305,7 @@ def build_source_model(blocks, diagnostics):
             name = _name(block.param('NAME') or 'PART_%d' % len(model.parts))
             current_part = SourcePart(name)
             model.parts[name] = current_part
+            current_instance = None
             current_system = None
             diagnostics.converted(kw)
         elif kw == 'END PART':
@@ -308,7 +316,7 @@ def build_source_model(blocks, diagnostics):
             current_system = _node_system(block, diagnostics)
             diagnostics.converted(kw)
         elif kw == 'NODE':
-            part = current_part or global_part
+            part = current_part or (current_instance.mesh if current_instance else global_part)
             implicit_set = _name(block.param('NSET'))
             implicit_members = []
             for row in joined_data_rows(block):
@@ -333,7 +341,7 @@ def build_source_model(blocks, diagnostics):
                         implicit_set, 'node', implicit_members, block=block)
             diagnostics.converted(kw)
         elif kw == 'ELEMENT':
-            part = current_part or global_part
+            part = current_part or (current_instance.mesh if current_instance else global_part)
             element_type = _name(block.param('TYPE'))
             implicit_set = _name(block.param('ELSET'))
             implicit_members = []
@@ -362,8 +370,9 @@ def build_source_model(blocks, diagnostics):
             definition = _parse_set(block, kind)
             if not definition.name:
                 diagnostics.error('UNNAMED_SET', '*%s has no set name.' % kw, block)
-            elif current_part is not None:
-                target = current_part.nsets if kind == 'node' else current_part.elsets
+            elif current_part is not None or current_instance is not None:
+                scoped_part = current_part or current_instance.mesh
+                target = scoped_part.nsets if kind == 'node' else scoped_part.elsets
                 if definition.name in target:
                     target[definition.name].members.extend(definition.members)
                 else:
@@ -372,7 +381,7 @@ def build_source_model(blocks, diagnostics):
                 model.global_sets.append(definition)
             diagnostics.converted(kw)
         elif kw in ('SOLID SECTION', 'SHELL SECTION', 'BEAM SECTION', 'MEMBRANE SECTION', 'MASS'):
-            part = current_part or global_part
+            part = current_part or (current_instance.mesh if current_instance else global_part)
             kind = kw.split()[0].lower()
             section = SectionDefinition(
                 kind,
@@ -390,22 +399,30 @@ def build_source_model(blocks, diagnostics):
                 _name(block.param('TYPE') or 'ELEMENT'),
                 joined_data_rows(block),
                 block,
-                current_part.name if current_part else None,
+                (current_part.name if current_part else
+                 current_instance.name if current_instance else None),
             )
-            if current_part:
-                current_part.surfaces[surface.name] = surface
+            if current_part or current_instance:
+                scoped_part = current_part or current_instance.mesh
+                scoped_part.surfaces[surface.name] = surface
             else:
                 model.global_surfaces.append(surface)
             diagnostics.converted(kw)
         elif kw == 'INSTANCE':
-            model.instances.append(InstanceDefinition(
+            current_instance = InstanceDefinition(
                 _name(block.param('NAME')),
                 _name(block.param('PART')),
                 joined_data_rows(block),
                 block,
-            ))
+            )
+            model.instances.append(current_instance)
+            current_system = None
             diagnostics.converted(kw)
-        elif kw in ('END INSTANCE', 'ASSEMBLY', 'END ASSEMBLY', 'CONTACT'):
+        elif kw == 'END INSTANCE':
+            current_instance = None
+            current_system = None
+            diagnostics.converted(kw)
+        elif kw in ('ASSEMBLY', 'END ASSEMBLY', 'CONTACT'):
             diagnostics.converted(kw)
         elif kw == 'MATERIAL':
             material = MaterialDefinition(_name(block.param('NAME')), block)
@@ -420,6 +437,34 @@ def build_source_model(blocks, diagnostics):
         elif kw == 'AMPLITUDE':
             model.amplitudes[_name(block.param('NAME'))] = block
             diagnostics.converted(kw)
+        elif kw == 'SECTION CONTROLS':
+            control_name = _name(block.param('NAME'))
+            if not control_name:
+                diagnostics.error(
+                    'UNNAMED_SECTION_CONTROLS',
+                    '*SECTION CONTROLS has no NAME.',
+                    block,
+                )
+            else:
+                model.section_controls[control_name] = block
+                diagnostics.converted(kw)
+        elif kw == 'CONTACT INITIALIZATION DATA':
+            if block.data:
+                diagnostics.unsupported(
+                    kw,
+                    block,
+                    'Non-empty contact initialization data has no general LS-DYNA equivalent.',
+                )
+            else:
+                # Abaqus/CAE can leave an unused, empty named definition in
+                # the deck.  It carries no parameters to the active contact.
+                diagnostics.ignored(kw)
+                diagnostics.info(
+                    'EMPTY_CONTACT_INITIALIZATION',
+                    'Empty contact initialization definition %s has no active data and was omitted.' % (
+                        _name(block.param('NAME')) or '<UNNAMED>'),
+                    block,
+                )
         elif kw == 'STEP':
             step_name = _name(block.param('NAME') or 'STEP_%d' % (len(model.steps) + 1))
             current_step = StepDefinition(step_name, block)
@@ -451,7 +496,7 @@ def build_source_model(blocks, diagnostics):
         elif kw in (
             'BOUNDARY', 'CLOAD', 'DLOAD', 'DSLOAD', 'INITIAL CONDITIONS',
             'CONTACT PAIR', 'CONTACT INCLUSIONS', 'CONTACT PROPERTY ASSIGNMENT',
-            'TIE', 'RIGID BODY', 'TEMPERATURE',
+            'TIE', 'RIGID BODY', 'TEMPERATURE', 'BULK VISCOSITY',
         ):
             model.actions.append(Action(kw, block, current_step.name if current_step else None))
             diagnostics.converted(kw)
@@ -570,7 +615,10 @@ def flatten_model(source, diagnostics):
         placements.append(('GLOBAL', global_part, None))
     if source.instances:
         for instance in source.instances:
-            part = source.parts.get(instance.part)
+            template_part = source.parts.get(instance.part)
+            embedded = instance.mesh
+            has_embedded_mesh = bool(embedded.nodes or embedded.elements)
+            part = embedded if has_embedded_mesh else template_part
             if part is None:
                 diagnostics.error(
                     'MISSING_INSTANCE_PART',
@@ -578,6 +626,14 @@ def flatten_model(source, diagnostics):
                     instance.block,
                 )
                 continue
+            if (has_embedded_mesh and template_part is not None and
+                    (template_part.nodes or template_part.elements)):
+                diagnostics.warning(
+                    'INSTANCE_MESH_OVERRIDES_PART',
+                    'Instance %s contains its own mesh; embedded instance data was used instead of part %s.' % (
+                        instance.name, instance.part),
+                    instance.block,
+                )
             placements.append((instance.name, part, instance))
     else:
         for part_name, part in source.parts.items():
